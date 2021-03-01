@@ -18,7 +18,7 @@ var schema = {
 
     // place name (phrase analysis)
     phrase: hash,
-
+    address: hash,
     // address data
     address_parts: {
       type: 'object',
