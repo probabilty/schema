@@ -23,7 +23,7 @@ client.info(null, (err, res) => {
   const version = _.get(res, 'version.number', '0.0.0');
 
   // pretty print error message
-  if (!semver.satisfies(targetVersion, targetVersion)) {
+  if (!semver.satisfies(version, targetVersion)) {
     console.log(`${cli.status.failure} ${version}\n`);
     process.exit(1)
   }
