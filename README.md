@@ -64,7 +64,7 @@ node scripts/update_settings.js          # update index settings
 
 #### output schema file
 
-Use this script to pretty-print the whole schema file or a single mapping to stdout.
+Use this script to pretty-print the schema's mappings to stdout.
 
 ```bash
 node scripts/output_mapping.js
@@ -152,4 +152,4 @@ $ docker run --rm --name elastic-test -p 9200:9200 pelias/elasticsearch:7.5.1
 
 ### Continuous Integration
 
-Travis tests every release against all supported Node.js versions.
+CI tests every release against all supported Node.js versions.

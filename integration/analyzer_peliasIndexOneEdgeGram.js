@@ -1,15 +1,16 @@
 // validate analyzer is behaving as expected
 
-var tape = require('tape'),
-    elastictest = require('elastictest'),
-    punctuation = require('../punctuation');
+const tape = require('tape'),
+    Suite = require('../test/elastictest/Suite'),
+    punctuation = require('../punctuation'),
+    config = require('pelias-config').generate();
 
 module.exports.tests = {};
 
 module.exports.tests.analyze = function(test, common){
   test( 'analyze', function(t){
 
-    var suite = new elastictest.Suite( common.clientOpts, common.create );
+    var suite = new Suite( common.clientOpts, common.create );
     var assertAnalysis = common.analyze.bind( null, suite, t, 'peliasIndexOneEdgeGram' );
     suite.action( function( done ){ setTimeout( done, 500 ); }); // wait for es to bring some shards up
 
@@ -48,10 +49,9 @@ module.exports.tests.analyze = function(test, common){
       '1:a',
       '2:a', '2:ab',
       '3:a', '3:ab', '3:abc',
-      '4:a', '4:ab', '4:abc', '4:abcd', '4:abcde', '4:abcdef', 
+      '4:a', '4:ab', '4:abc', '4:abcd', '4:abcde', '4:abcdef',
       '4:abcdefg', '4:abcdefgh', '4:abcdefghi', '4:abcdefghij'
     ] );
-    assertAnalysis( 'removeAllZeroNumericPrefix', '00001', ['1'] );
 
     assertAnalysis( 'unique', '1 1 1', ['1','1','1'] );
     assertAnalysis( 'notnull', ' / / ', [] );
@@ -69,7 +69,7 @@ module.exports.tests.analyze = function(test, common){
     // remove punctuation (handled by the char_filter)
     assertAnalysis('punctuation', punctuation.all.join(''), ['0:&', '0:a', '0:an', '0:and', '0:u', '0:un', '0:und'] );
     assertAnalysis( 'punctuation', 'Hawai‘i', ['0:h', '0:ha', '0:haw', '0:hawa', '0:hawai', '0:hawaii'] );
-
+    assertAnalysis( 'punctuation', '„Tip Top”', ['0:t', '0:ti', '0:tip', '1:t', '1:to', '1:top'] );
     // ensure that very large grams are created
     assertAnalysis( 'largeGrams', 'grolmanstrasse', [
       '0:g', '0:gr', '0:gro', '0:grol', '0:grolm', '0:grolma', '0:grolman', '0:grolmans',
@@ -85,6 +85,15 @@ module.exports.tests.analyze = function(test, common){
 
     assertAnalysis( 'british_american_english', 'town theatre', ['0:town', '1:theatre', '1:theater'] );
     assertAnalysis( 'british_american_english', 'town theater', ['0:town', '1:theater', '1:theatre'] );
+    if (config.schema.icuTokenizer) {
+      assertAnalysis('thai_address', 'ซอยเพชรบุรี๑foo', [
+        '0:ซ', '0:ซอ', '0:ซอย',
+        '1:เพชรบุรี1', '1:เพชรบุรี', '1:เพชรบุร', '1:เพชรบุ', '1:เพชรบ', '1:เพชร', '1:เพช', '1:เพ', '1:เ',
+        '2:f', '2:fo', '2:foo'] );
+    } else {
+      // no ICU tokenization, so we split only on spaces
+      assertAnalysis('thai_address', 'ซอยเพชรบุรี๑foo', ['0:ซอยเพชรบุรี1foo']);
+    }
 
     suite.run( t.end );
   });
@@ -95,7 +104,7 @@ module.exports.tests.analyze = function(test, common){
 module.exports.tests.address_suffix_expansions = function(test, common){
   test( 'address suffix expansions', function(t){
 
-    var suite = new elastictest.Suite( common.clientOpts, common.create );
+    var suite = new Suite( common.clientOpts, common.create );
     var assertAnalysis = common.analyze.bind( null, suite, t, 'peliasIndexOneEdgeGram' );
     suite.action( function( done ){ setTimeout( done, 500 ); }); // wait for es to bring some shards up
 
@@ -125,7 +134,7 @@ module.exports.tests.address_suffix_expansions = function(test, common){
 module.exports.tests.stop_words = function(test, common){
   test( 'stop words', function(t){
 
-    var suite = new elastictest.Suite( common.clientOpts, common.create );
+    var suite = new Suite( common.clientOpts, common.create );
     var assertAnalysis = common.analyze.bind( null, suite, t, 'peliasIndexOneEdgeGram' );
     suite.action( function( done ){ setTimeout( done, 500 ); }); // wait for es to bring some shards up
 
@@ -146,7 +155,7 @@ module.exports.tests.stop_words = function(test, common){
 module.exports.tests.functional = function(test, common){
   test( 'functional', function(t){
 
-    var suite = new elastictest.Suite( common.clientOpts, common.create );
+    var suite = new Suite( common.clientOpts, common.create );
     var assertAnalysis = common.analyze.bind( null, suite, t, 'peliasIndexOneEdgeGram' );
     suite.action( function( done ){ setTimeout( done, 500 ); }); // wait for es to bring some shards up
 
@@ -172,7 +181,7 @@ module.exports.tests.functional = function(test, common){
 module.exports.tests.unique = function(test, common){
   test( 'unique', function(t){
 
-    var suite = new elastictest.Suite( common.clientOpts, common.create );
+    var suite = new Suite( common.clientOpts, common.create );
     var assertAnalysis = common.analyze.bind( null, suite, t, 'peliasIndexOneEdgeGram' );
     suite.action( function( done ){ setTimeout( done, 500 ); }); // wait for es to bring some shards up
 
@@ -186,7 +195,7 @@ module.exports.tests.unique = function(test, common){
 module.exports.tests.address = function(test, common){
   test( 'address', function(t){
 
-    var suite = new elastictest.Suite( common.clientOpts, common.create );
+    var suite = new Suite( common.clientOpts, common.create );
     var assertAnalysis = common.analyze.bind( null, suite, t, 'peliasIndexOneEdgeGram' );
     suite.action( function( done ){ setTimeout( done, 500 ); }); // wait for es to bring some shards up
 
@@ -218,7 +227,7 @@ module.exports.tests.address = function(test, common){
 module.exports.tests.unicode = function(test, common){
   test( 'normalization', function(t){
 
-    var suite = new elastictest.Suite( common.clientOpts, common.create );
+    var suite = new Suite( common.clientOpts, common.create );
     var assertAnalysis = common.analyze.bind( null, suite, t, 'peliasIndexOneEdgeGram' );
     suite.action( function( done ){ setTimeout( done, 500 ); }); // wait for es to bring some shards up
 

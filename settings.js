@@ -2,14 +2,15 @@ const _ = require('lodash');
 const peliasConfig = require('pelias-config');
 const punctuation = require('./punctuation');
 const synonyms = require('./synonyms/loader').load();
+const settingsICU = require('./settings-icu');
 
 require('./configValidation').validate(peliasConfig.generate());
 
 function generate(){
-  var config = peliasConfig.generate();
+  const config = peliasConfig.generate();
 
   // Default settings
-  var settings = {
+  let settings = {
     "index": {
       "similarity": {
         "peliasDefaultSimilarity": {
@@ -56,7 +57,6 @@ function generate(){
             "name_synonyms_multiplexer",
             "icu_folding",
             "remove_ordinals",
-            "removeAllZeroNumericPrefix",
             "peliasOneEdgeGramFilter",
             "unique_only_same_position",
             "notnull",
@@ -72,7 +72,6 @@ function generate(){
             "trim",
             "icu_folding",
             "remove_ordinals",
-            "removeAllZeroNumericPrefix",
             "unique_only_same_position",
             "notnull"
           ]
@@ -91,7 +90,6 @@ function generate(){
             "name_synonyms_multiplexer",
             "icu_folding",
             "remove_ordinals",
-            "removeAllZeroNumericPrefix",
             "unique_only_same_position",
             "notnull",
             "flatten_graph"
@@ -226,14 +224,9 @@ function generate(){
           "only_on_same_position": "true"
         },
         "peliasOneEdgeGramFilter": {
-          "type" : "edgeNGram",
+          "type" : "edge_ngram",
           "min_gram" : 1,
           "max_gram" : 24
-        },
-        "removeAllZeroNumericPrefix" :{
-          "type" : "pattern_replace",
-          "pattern" : "^(0*)",
-          "replacement" : ""
         },
         "remove_ordinals" : {
           "type" : "pattern_replace",
@@ -298,6 +291,11 @@ function generate(){
       "synonyms": !_.isEmpty(multiWordEntries) ? multiWordEntries : ['']
     };
   });
+
+  // Experimental ICU tokenizer
+  if (config.schema.icuTokenizer) {
+    settings = settingsICU(settings);
+  }
 
   // Merge settings from pelias/config
   settings = _.merge({}, settings, _.get(config, 'elasticsearch.settings', {}));

@@ -1,12 +1,13 @@
 // validate analyzer is behaving as expected
-const elastictest = require('elastictest')
+const Suite = require('../test/elastictest/Suite')
+const config = require('pelias-config').generate()
 
 module.exports.tests = {};
 
 module.exports.tests.analyze = function(test, common){
   test( 'analyze', function(t){
 
-    var suite = new elastictest.Suite( common.clientOpts, common.create );
+    var suite = new Suite( common.clientOpts, common.create );
     var assertAnalysis = common.analyze.bind( null, suite, t, 'peliasStreet' );
     suite.action( function( done ){ setTimeout( done, 500 ); }); // wait for es to bring some shards up
 
@@ -22,6 +23,20 @@ module.exports.tests.analyze = function(test, common){
     assertAnalysis( 'remove_ordinals', '1st 2nd 3rd 4th 5th', ['1','2','3','4','5'] );
     assertAnalysis( 'remove_ordinals', 'Ast th 101st', ['ast','th','101'] );
 
+    // complicated tokenization for some Asian languages
+    if (config.schema.icuTokenizer) {
+      assertAnalysis('thai_address1', 'ซอยเพชรบุรี๑', ['ซอย', 'เพชรบุรี1'] );
+      assertAnalysis('thai_address2', 'ซอยเพชรบุรี๑foo', ['ซอย', 'เพชรบุรี1', 'foo'] );
+      assertAnalysis('thai_address3', 'บ้านเลขที่๑๒๓ถนนสุขุมวิทแขวงคลองตันเหนือเขตวัฒนา กรุงเทพมหานคร๑๐๑๑๐', ["บาน", "เลข", "ที123ถนน", "สุขุมวิท", "แขวง", "คลองตัน", "เหนือ", "เขต", "วัฒนา", "กรุงเทพมหานคร10110"]);
+      assertAnalysis('chinese_address', '北京市朝阳区东三环中路1号国际大厦A座1001室',
+        ['北京市', '朝阳', '区', '东', '三', '环', '中路', '1', '号', '国际', '大厦', 'a', '座', '1001', '室']);
+      assertAnalysis('japanese_address', '東京都渋谷区渋谷２丁目２１−１渋谷スクランブルスクエア４階', ["東京", "都", "渋谷", "区", "渋谷", "2", "丁目", "21", "1", "渋谷", "スクランフル", "スクエア", "4", "階"]);
+      assertAnalysis('khmer_address', 'ផ្ទះលេខ១២៣ផ្លូវព្រះសីហនុសង្កាត់ទន្លេបាសាក់ខណ្ឌចំការមនរាជធានីភ្នំពេញ', ["ផទះលេខ123ផលូវ", "ពរះសីហនុ", "សងកាត", "ទនលេបាសាក", "ខណឌចំការមន", "រាជធានី", "ភនំពេញ"]);
+      assertAnalysis('lao_address', 'ບ້ານເລກທີ່໑໕໕ຖະໜົນທ່ານຊານຂອງເຂດຈັນທະບູລີນະຄອນວຽງຈັນ', ["ບານ", "ເລກ", "ທີ155ຖະຫນົນ", "ທານ", "ຊານ", "ຂອງ", "ເຂດ", "ຈັນທະ", "ບູ", "ລີ", "ນະຄອນ", "ວຽງຈັນ"]);
+    } else {
+      // no ICU tokenization, so we split only on spaces
+      assertAnalysis('thai_address1', 'ซอยเพชรบุรี๑', ['ซอยเพชรบุรี1'] );
+    }
     suite.run( t.end );
   });
 };
@@ -29,7 +44,7 @@ module.exports.tests.analyze = function(test, common){
 module.exports.tests.functional = function(test, common){
   test( 'functional', function(t){
 
-    var suite = new elastictest.Suite( common.clientOpts, common.create );
+    var suite = new Suite( common.clientOpts, common.create );
     var assertAnalysis = common.analyze.bind( null, suite, t, 'peliasStreet' );
     suite.action( function( done ){ setTimeout( done, 500 ); }); // wait for es to bring some shards up
 
@@ -46,7 +61,7 @@ module.exports.tests.functional = function(test, common){
 module.exports.tests.normalize_punctuation = function(test, common){
   test( 'normalize punctuation', function(t){
 
-    var suite = new elastictest.Suite( common.clientOpts, common.create );
+    var suite = new Suite( common.clientOpts, common.create );
     var assertAnalysis = common.analyze.bind( null, suite, t, 'peliasStreet' );
     suite.action( function( done ){ setTimeout( done, 500 ); }); // wait for es to bring some shards up
 
@@ -64,7 +79,7 @@ module.exports.tests.normalize_punctuation = function(test, common){
 module.exports.tests.remove_ordinals = function(test, common){
   test( 'remove ordinals', function(t){
 
-    var suite = new elastictest.Suite( common.clientOpts, common.create );
+    var suite = new Suite( common.clientOpts, common.create );
     var assertAnalysis = common.analyze.bind( null, suite, t, 'peliasStreet' );
     suite.action( function( done ){ setTimeout( done, 500 ); }); // wait for es to bring some shards up
 
@@ -138,7 +153,7 @@ module.exports.tests.remove_ordinals = function(test, common){
 module.exports.tests.tokenizer = function(test, common){
   test( 'tokenizer', function(t){
 
-    var suite = new elastictest.Suite( common.clientOpts, common.create );
+    var suite = new Suite( common.clientOpts, common.create );
     var assertAnalysis = common.analyze.bind( null, suite, t, 'peliasStreet' );
     suite.action( function( done ){ setTimeout( done, 500 ); }); // wait for es to bring some shards up
 
@@ -163,7 +178,7 @@ module.exports.tests.tokenizer = function(test, common){
 module.exports.tests.unicode = function(test, common){
   test( 'normalization', function(t){
 
-    var suite = new elastictest.Suite( common.clientOpts, common.create );
+    var suite = new Suite( common.clientOpts, common.create );
     var assertAnalysis = common.analyze.bind( null, suite, t, 'peliasStreet' );
     suite.action( function( done ){ setTimeout( done, 500 ); }); // wait for es to bring some shards up
 
@@ -194,7 +209,7 @@ module.exports.tests.unicode = function(test, common){
 module.exports.tests.germanic_street_suffixes = function (test, common) {
   test('germanic_street_suffixes', function (t) {
 
-    var suite = new elastictest.Suite(common.clientOpts, common.create );
+    var suite = new Suite(common.clientOpts, common.create );
     var assertAnalysis = common.analyze.bind(null, suite, t, 'peliasStreet');
     suite.action(function (done) { setTimeout(done, 500); }); // wait for es to bring some shards up
 

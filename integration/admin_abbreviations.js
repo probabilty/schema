@@ -1,4 +1,4 @@
-const elastictest = require('elastictest');
+const Suite = require('../test/elastictest/Suite');
 const config = require('pelias-config').generate();
 const getTotalHits = require('./_hits_total_helper');
 
@@ -12,14 +12,13 @@ module.exports.tests = {};
 module.exports.tests.synonyms = function (test, common) {
   test('synonyms - alpha3 does not share a prefix with alpha2', function (t) {
 
-    var suite = new elastictest.Suite(common.clientOpts, common.create);
+    var suite = new Suite(common.clientOpts, common.create);
     suite.action(done => setTimeout(done, 500)); // wait for es to bring some shards up
 
     // index document 1 with country_a='MEX'
     suite.action(done => {
       suite.client.index({
         index: suite.props.index,
-        type: config.schema.typeName,
         id: '1',
         body: {
           parent: {
@@ -33,7 +32,6 @@ module.exports.tests.synonyms = function (test, common) {
     suite.action(done => {
       suite.client.index({
         index: suite.props.index,
-        type: config.schema.typeName,
         id: '2',
         body: {
           parent: {
@@ -47,7 +45,6 @@ module.exports.tests.synonyms = function (test, common) {
     suite.assert(done => {
       suite.client.search({
         index: suite.props.index,
-        type: config.schema.typeName,
         searchType: 'dfs_query_then_fetch',
         body: {
           query: {
@@ -70,7 +67,6 @@ module.exports.tests.synonyms = function (test, common) {
     suite.assert(done => {
       suite.client.search({
         index: suite.props.index,
-        type: config.schema.typeName,
         searchType: 'dfs_query_then_fetch',
         body: {
           query: {
@@ -93,7 +89,6 @@ module.exports.tests.synonyms = function (test, common) {
     suite.assert(done => {
       suite.client.search({
         index: suite.props.index,
-        type: config.schema.typeName,
         searchType: 'dfs_query_then_fetch',
         body: {
           query: {
@@ -116,7 +111,6 @@ module.exports.tests.synonyms = function (test, common) {
     suite.assert(done => {
       suite.client.search({
         index: suite.props.index,
-        type: config.schema.typeName,
         searchType: 'dfs_query_then_fetch',
         body: {
           query: {
@@ -140,14 +134,13 @@ module.exports.tests.synonyms = function (test, common) {
 
   test('synonyms - alpha3 shares a prefix with alpha2', function (t) {
 
-    var suite = new elastictest.Suite(common.clientOpts, common.create);
+    var suite = new Suite(common.clientOpts, common.create);
     suite.action(done => setTimeout(done, 500)); // wait for es to bring some shards up
 
     // index document 1 with country_a='NZL'
     suite.action(done => {
       suite.client.index({
         index: suite.props.index,
-        type: config.schema.typeName,
         id: '1',
         body: {
           parent: {
@@ -161,7 +154,6 @@ module.exports.tests.synonyms = function (test, common) {
     suite.action(done => {
       suite.client.index({
         index: suite.props.index,
-        type: config.schema.typeName,
         id: '2',
         body: {
           parent: {
@@ -175,7 +167,6 @@ module.exports.tests.synonyms = function (test, common) {
     suite.assert(done => {
       suite.client.search({
         index: suite.props.index,
-        type: config.schema.typeName,
         searchType: 'dfs_query_then_fetch',
         body: {
           query: {
@@ -198,7 +189,6 @@ module.exports.tests.synonyms = function (test, common) {
     suite.assert(done => {
       suite.client.search({
         index: suite.props.index,
-        type: config.schema.typeName,
         searchType: 'dfs_query_then_fetch',
         body: {
           query: {
@@ -221,7 +211,6 @@ module.exports.tests.synonyms = function (test, common) {
     suite.assert(done => {
       suite.client.search({
         index: suite.props.index,
-        type: config.schema.typeName,
         searchType: 'dfs_query_then_fetch',
         body: {
           query: {
@@ -244,7 +233,6 @@ module.exports.tests.synonyms = function (test, common) {
     suite.assert(done => {
       suite.client.search({
         index: suite.props.index,
-        type: config.schema.typeName,
         searchType: 'dfs_query_then_fetch',
         body: {
           query: {
@@ -268,14 +256,13 @@ module.exports.tests.synonyms = function (test, common) {
 
   test('synonyms - additional synonyms do not increase field length', function (t) {
 
-    var suite = new elastictest.Suite(common.clientOpts, common.create);
+    var suite = new Suite(common.clientOpts, common.create);
     suite.action(done => setTimeout(done, 500)); // wait for es to bring some shards up
 
     // index document 1 with country_a='NZL'
     suite.action(done => {
       suite.client.index({
         index: suite.props.index,
-        type: config.schema.typeName,
         id: '1',
         body: {
           parent: {
@@ -289,7 +276,6 @@ module.exports.tests.synonyms = function (test, common) {
     suite.action(done => {
       suite.client.index({
         index: suite.props.index,
-        type: config.schema.typeName,
         id: '2',
         body: {
           parent: {
@@ -303,7 +289,6 @@ module.exports.tests.synonyms = function (test, common) {
     suite.assert(done => {
       suite.client.search({
         index: suite.props.index,
-        type: config.schema.typeName,
         searchType: 'dfs_query_then_fetch',
         body: {
           query: {

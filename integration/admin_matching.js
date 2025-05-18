@@ -1,6 +1,6 @@
 // validate analyzer is behaving as expected
 
-const elastictest = require('elastictest');
+const Suite = require('../test/elastictest/Suite');
 const config = require('pelias-config').generate();
 const getTotalHits = require('./_hits_total_helper');
 
@@ -9,14 +9,13 @@ module.exports.tests = {};
 module.exports.tests.functional = function(test, common){
   test( 'functional', function(t){
 
-    var suite = new elastictest.Suite( common.clientOpts, common.create );
+    var suite = new Suite( common.clientOpts, common.create );
     suite.action( function( done ){ setTimeout( done, 500 ); }); // wait for es to bring some shards up
 
     // index a document with all admin values
     suite.action( function( done ){
       suite.client.index({
         index: suite.props.index,
-        type: config.schema.typeName,
         id: '1', body: {
           parent: {
             country: 'Test Country',
@@ -46,7 +45,6 @@ module.exports.tests.functional = function(test, common){
     suite.assert( function( done ){
       suite.client.search({
         index: suite.props.index,
-        type: config.schema.typeName,
         body: { query: { match: { 'parent.country': 'Test Country' } } }
       }, function( err, res ){
         t.equal( err, undefined );
@@ -59,7 +57,6 @@ module.exports.tests.functional = function(test, common){
     suite.assert( function( done ){
       suite.client.search({
         index: suite.props.index,
-        type: config.schema.typeName,
         body: { query: { match: { 'parent.country_a': 'TestCountry' } } }
       }, function( err, res ){
         t.equal( err, undefined );
@@ -72,7 +69,6 @@ module.exports.tests.functional = function(test, common){
     suite.assert( function( done ){
       suite.client.search({
         index: suite.props.index,
-        type: config.schema.typeName,
         body: { query: { match: { 'parent.country_id': '100' } } }
       }, function( err, res ){
         t.equal( err, undefined );

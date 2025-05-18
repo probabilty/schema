@@ -30,7 +30,6 @@ const indexName = config.schema.indexName;
 const req = {
   index: indexName,
   body: schema,
-  include_type_name: false
 };
 
 client.indices.create(req, (err, res) => {
@@ -39,5 +38,5 @@ client.indices.create(req, (err, res) => {
     process.exit(1);
   }
   console.log('[put mapping]', '\t', indexName, res, '\n');
-  process.exit(!!err);
+  process.exit(0);
 });

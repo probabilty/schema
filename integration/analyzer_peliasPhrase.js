@@ -1,6 +1,6 @@
 // validate analyzer is behaving as expected
 
-const elastictest = require('elastictest');
+const Suite = require('../test/elastictest/Suite');
 const punctuation = require('../punctuation');
 const config = require('pelias-config').generate();
 const getTotalHits = require('./_hits_total_helper');
@@ -10,7 +10,7 @@ module.exports.tests = {};
 module.exports.tests.analyze = function(test, common){
   test( 'analyze', function(t){
 
-    var suite = new elastictest.Suite( common.clientOpts, common.create );
+    var suite = new Suite( common.clientOpts, common.create );
     var assertAnalysis = common.analyze.bind( null, suite, t, 'peliasPhrase' );
     suite.action( function( done ){ setTimeout( done, 500 ); }); // wait for es to bring some shards up
 
@@ -47,13 +47,10 @@ module.exports.tests.analyze = function(test, common){
     // remove punctuation (handled by the char_filter)
     assertAnalysis( 'punctuation', punctuation.all.join(''), ['0:&', '0:and', '0:und'] );
     assertAnalysis( 'punctuation', 'Hawai‘i', ['hawaii'] );
-
+    assertAnalysis( 'punctuation - « in between', '«res»pub«lika»', ['respublika'] );
+ 
     assertAnalysis( 'british_american_english', 'town theatre', ['0:town', '1:theatre', '1:theater'] );
     assertAnalysis( 'british_american_english', 'town theater', ['0:town', '1:theater', '1:theatre'] );
-
-    // remove leading zeros from numeric input
-    assertAnalysis( 'leading_zeros', '01000', ['0:1000'] );
-    assertAnalysis( 'leading_zeros', '09999', ['0:9999'] );
 
     suite.run( t.end );
   });
@@ -62,7 +59,7 @@ module.exports.tests.analyze = function(test, common){
 module.exports.tests.functional = function(test, common){
   test( 'functional', function(t){
 
-    var suite = new elastictest.Suite( common.clientOpts, common.create );
+    var suite = new Suite( common.clientOpts, common.create );
     var assertAnalysis = common.analyze.bind( null, suite, t, 'peliasPhrase' );
     suite.action( function( done ){ setTimeout( done, 500 ); }); // wait for es to bring some shards up
 
@@ -109,7 +106,7 @@ module.exports.tests.functional = function(test, common){
 module.exports.tests.tokenizer = function(test, common){
   test( 'tokenizer', function(t){
 
-    var suite = new elastictest.Suite( common.clientOpts, common.create );
+    var suite = new Suite( common.clientOpts, common.create );
     var assertAnalysis = common.analyze.bind( null, suite, t, 'peliasPhrase' );
     suite.action( function( done ){ setTimeout( done, 500 ); }); // wait for es to bring some shards up
 
@@ -135,7 +132,7 @@ module.exports.tests.tokenizer = function(test, common){
 module.exports.tests.slop = function(test, common){
   test( 'slop', function(t){
 
-    var suite = new elastictest.Suite( common.clientOpts, common.create );
+    var suite = new Suite( common.clientOpts, common.create );
     var assertAnalysis = common.analyze.bind( null, suite, t, 'peliasPhrase' );
     suite.action( function( done ){ setTimeout( done, 500 ); }); // wait for es to bring some shards up
 
@@ -153,7 +150,7 @@ module.exports.tests.slop = function(test, common){
 module.exports.tests.slop_query = function(test, common){
   test( 'slop query', function(t){
 
-    var suite = new elastictest.Suite( common.clientOpts, common.create );
+    var suite = new Suite( common.clientOpts, common.create );
     var assertAnalysis = common.analyze.bind( null, suite, t, 'peliasPhrase' );
     suite.action( function( done ){ setTimeout( done, 500 ); }); // wait for es to bring some shards up
 
@@ -161,7 +158,6 @@ module.exports.tests.slop_query = function(test, common){
     suite.action( function( done ){
       suite.client.index({
         index: suite.props.index,
-        type: config.schema.typeName,
         id: '1',
         body: { name: { default: 'Lake Cayuga' }, phrase: { default: 'Lake Cayuga' } }
       }, done );
@@ -171,7 +167,6 @@ module.exports.tests.slop_query = function(test, common){
     suite.action( function( done ){
       suite.client.index({
         index: suite.props.index,
-        type: config.schema.typeName,
         id: '2',
         body: { name: { default: 'Cayuga Lake' }, phrase: { default: 'Cayuga Lake' } }
       }, done );
@@ -181,7 +176,6 @@ module.exports.tests.slop_query = function(test, common){
     suite.action( function( done ){
       suite.client.index({
         index: suite.props.index,
-        type: config.schema.typeName,
         id: '3',
         body: { name: { default: '7991 Lake Cayuga Dr' }, phrase: { default: '7991 Lake Cayuga Dr' } }
       }, done );
@@ -249,14 +243,13 @@ module.exports.tests.slop_query = function(test, common){
 module.exports.tests.slop = function(test, common){
   test( 'slop', function(t){
 
-    var suite = new elastictest.Suite( common.clientOpts, common.create );
+    var suite = new Suite( common.clientOpts, common.create );
     suite.action( function( done ){ setTimeout( done, 500 ); }); // wait for es to bring some shards up
 
     // index a document
     suite.action( function( done ){
       suite.client.index({
         index: suite.props.index,
-        type: config.schema.typeName,
         id: '1',
         body: { name: { default: '52 Görlitzer Straße' } }
       }, done);
@@ -269,7 +262,6 @@ module.exports.tests.slop = function(test, common){
     suite.assert( function( done ){
       suite.client.search({
         index: suite.props.index,
-        type: config.schema.typeName,
         searchType: 'dfs_query_then_fetch',
         body: { query: { match_phrase: {
           'name.default': {
@@ -293,7 +285,7 @@ module.exports.tests.slop = function(test, common){
 module.exports.tests.unicode = function(test, common){
   test( 'normalization', function(t){
 
-    var suite = new elastictest.Suite( common.clientOpts, common.create );
+    var suite = new Suite( common.clientOpts, common.create );
     var assertAnalysis = common.analyze.bind( null, suite, t, 'peliasPhrase' );
     suite.action( function( done ){ setTimeout( done, 500 ); }); // wait for es to bring some shards up
 
